@@ -11,33 +11,64 @@ STEP necessari:
 5. per ogni richiesta post, bisogna "seguire" tutti i links associati ed estrarre le info richieste e scriverle in un csv
 """
 
+from typing import Dict, List, Union, Optional
+from datetime import datetime
+import time
+from scrapy.crawler import CrawlerProcess
+import scrapy
+import json
 import os
 import sys
 import logging
 logging.basicConfig(stream=sys.stdout, format='%(asctime)-15s %(message)s',
-                level=logging.INFO, datefmt=None)
+                    level=logging.INFO, datefmt=None)
 logger = logging.getLogger("region-id-spyder")
 
 
-import csv
-import json
+ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
+print(ROOT_PATH)
 
-import scrapy
-from scrapy.crawler import CrawlerProcess
+DICT_PAYLOAD = {
+    'FormatoReport': '3',
+    'GeneraReport': 'false',
+    'displayReport': 'display%3Anone%3B',
+    'flagAreaPub': 'True',
+    'DataFromSession': 'false',
+    'DownloadToken': '',
+    'NumRecord': '160',
+    'Nazionalita': 'I',
+    'IDRegione': '',  # field to be fill in the loop
+    'IstatProv': '',  # field to be fill in the loop
+    'Identificativo': '',
+    'RadioBtnDenominazione': 'C',
+    'Denominazione': '',
+    'NumCertProv': '',
+    'TipoSoggetto': 'I',
+    'IDAttivita_I': '',
+    'IDAttivita': ''}
+
+
+def get_raw_payload(dict_payload: Dict[str, str]) -> str:
+    """
+    Util method for parsing the dict_payload in a raw string payload.
+    """
+    assert isinstance(
+        dict_payload, dict), 'The provided payload must be a Python Dict.'
+    ss = [key + '=' + value for key, value in dict_payload.items()]
+    return '&'.join(ss)
 
 
 class FGSpyder(scrapy.Spider):
     name = 'fgspyder'
-
-    base_url = 'https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_=1657727080235'
-
+    # starts_urls = ['https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_=1657727080235', 'https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_=1658155872384']
+    base_url = 'https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_='
     headers = {
         'accept': '*/*',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'en-US, en;q = 0.9',
         'content-length': 284,
         'content-type': 'application/x-www-form-urlencoded',
-        'cookie': 'ASP.NET_SessionId=wuufmyjfo2kg3tjqr50puheo; ai_user=M9M1U|2022-07-13T13:45:14.695Z; ai_session=6fqj/|1657719914802|1657727070692.1',
+        'cookie': '',
         'origin': 'https://www.fgas.it',
         'referer': 'https://www.fgas.it/RicercaSezC',
         'request-context': 'appId = cid-v1: 81c9feee-b38a-4c67-a311-ddfbb9d069b5',
@@ -51,49 +82,54 @@ class FGSpyder(scrapy.Spider):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
         'x-requested-with': 'XMLHttpRequest'
     }
-
-    body = 'FormatoReport=3&GeneraReport=false&displayReport=display%3Anone%3B&flagAreaPub=True&DataFromSession=false&DownloadToken=&NumRecord=160&Nazionalita=I&IDRegione=19&IstatProv=083&Identificativo=&RadioBtnDenominazione=C&Denominazione=&NumCertProv=&TipoSoggetto=I&IDAttivita_I=&IDAttivita='
-    
-    #TODO: payload is obtained by parsing the body, however the scrapy post request does not work if payload is used, it requires raw payload.
-    # payload = {
-    #     'FormatoReport': '3', 
-    #     'GeneraReport': 'false', 
-    #     'displayReport': 'display%3Anone%3B', 
-    #     'flagAreaPub': 'True', 
-    #     'DataFromSession': 'false', 
-    #     'DownloadToken': '', 
-    #     'NumRecord': '160', 
-    #     'Nazionalita': 'I', 
-    #     'IDRegione': '19', 
-    #     'IstatProv': '083', 
-    #     'Identificativo': '', 
-    #     'RadioBtnDenominazione': 'C', 
-    #     'Denominazione': '', 
-    #     'NumCertProv': '', 
-    #     'TipoSoggetto': 'I', 
-    #     'IDAttivita_I': '', 
-    #     'IDAttivita': ''}
-
     # custom scraper settings
     custom_settings = {
         # pass cookies along with headers
-        'COOKIES_ENABLED': False
+        'COOKIES_ENABLED': False,
+        'DOWNLOAD_DELAY': 2
     }
 
-    def start_requests(self):
-        yield scrapy.Request(
-            url=self.base_url,
-            method='POST',
-            headers=self.headers,
-            body=self.body,
-            # body=json.dumps(self.payload),
-            callback=self.parse
-            )
+    # cookies = {
+    #     'CookieOptIn': 'true',
+    #     'luckynumber': '1896761001',
+    #     'MpSession': '9ff31f05-36fd-4570-9cdc-e1800bf682fe',
+    # }
 
-    def parse(self, response):
+    dict_payload = DICT_PAYLOAD
+
+    with open(f'{ROOT_PATH}/assets/regions-ids.json') as f:
+        regions = json.load(f)
+    with open(f'{ROOT_PATH}/assets/provinces-ids.json') as f:
+        provinces = json.load(f)
+
+    def start_requests(self):
+        for region_name, region_id in self.regions.items():
+            self.dict_payload.update({'IDRegione': region_id})
+            # get a list which elements are dictionaries {PROV_NAME: PROV_ID}
+            provs = self.provinces.get(region_name)
+            for prov in provs:
+                prov_name, prov_id = prov.popitem()
+                logger.info(
+                    f'Requesting POST for {region_name, prov_name} with prov_id: {prov_id}')
+                self.dict_payload.update({'IstatProv': prov_id})
+                body = get_raw_payload(self.dict_payload)
+                logger.info(f'Requesting a POST with body: {body}')
+                # time.sleep(3)
+                yield scrapy.Request(
+                    url=self.base_url,
+                    method='POST',
+                    headers=self.headers,
+                    # cookies=self.cookies,
+                    body=body,
+                    callback=self.parse_enterprise,
+                    cb_kwargs=dict(region_name=region_name,
+                                   prov_name=prov_name)
+                )
+
+    def parse_enterprise(self, response, region_name: str, prov_name: str):
         resp = json.dumps(json.loads(response.text), indent=4)
-        print(resp)
-        with open('resp.json', '+w') as f:
+        now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
+        with open(f'{ROOT_PATH}/data/{now}_{region_name}_{prov_name}.json', '+w') as f:
             json.dump(resp, f)
 
 
