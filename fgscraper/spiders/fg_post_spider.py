@@ -1,19 +1,9 @@
-# se hai l'id della regione con questa GET ottieni tutte e sole le provincie associate a questa regione
-# Regione AQUILA -> id=13
-# fgas.it/RicercaCommon/LoadProvinceByRegione?idRegione=13&_=1657788838798
-# per fare la prima POST (ottenere tutti i link delle varie imprese) nel payload devi inserire id regione e value provincia
 """
-STEP necessari:
-1. ottenere tutti gli id delle regioni
-2. ottenere tutti i value per ogni provincia associata ad una regione
-3. costruire base dati (dict) con le due info precedenti da usare per il for loop successivo
-4. eseguire le R x P chiamate POST, dove R è il numero delle regioni e P è il numero delle provincie totali (doppio ciclo for su regioni e provincie)
-5. per ogni richiesta post, bisogna "seguire" tutti i links associati ed estrarre le info richieste e scriverle in un csv
+Questo spyder serve per estrarre tutte le imprese nazionali suddivise per regioni e provincie. Il suo output è un txt, uno per ogni provincia (107), il quale contiene il campo Imprese|id, dove id, è l'id 
+da dover usare successivamente in una GET per estrarre l'info richiesta.
 """
 
-from typing import Dict, List, Union, Optional
 from datetime import datetime
-import time
 from scrapy.crawler import CrawlerProcess
 import scrapy
 import json
@@ -24,9 +14,10 @@ logging.basicConfig(stream=sys.stdout, format='%(asctime)-15s %(message)s',
                     level=logging.INFO, datefmt=None)
 logger = logging.getLogger("region-id-spyder")
 
+import utils as spyder_utils
+
 
 ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
-print(ROOT_PATH)
 
 DICT_PAYLOAD = {
     'FormatoReport': '3',
@@ -48,27 +39,19 @@ DICT_PAYLOAD = {
     'IDAttivita': ''}
 
 
-def get_raw_payload(dict_payload: Dict[str, str]) -> str:
-    """
-    Util method for parsing the dict_payload in a raw string payload.
-    """
-    assert isinstance(
-        dict_payload, dict), 'The provided payload must be a Python Dict.'
-    ss = [key + '=' + value for key, value in dict_payload.items()]
-    return '&'.join(ss)
 
-
-class FGSpyder(scrapy.Spider):
-    name = 'fgspyder'
+class FGPOSTSpyder(scrapy.Spider):
+    name = 'fgpostspyder'
     # starts_urls = ['https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_=1657727080235', 'https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_=1658155872384']
     base_url = 'https://www.fgas.it/RicercaSezC/RicercaSezC_PostResult?_='
     headers = {
         'accept': '*/*',
         'accept-encoding': 'gzip, deflate, br',
         'accept-language': 'en-US, en;q = 0.9',
-        'content-length': 284,
-        'content-type': 'application/x-www-form-urlencoded',
+        # 'content-length': 284,
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
         'cookie': '',
+        'dnt': 1,
         'origin': 'https://www.fgas.it',
         'referer': 'https://www.fgas.it/RicercaSezC',
         'request-context': 'appId = cid-v1: 81c9feee-b38a-4c67-a311-ddfbb9d069b5',
@@ -82,6 +65,7 @@ class FGSpyder(scrapy.Spider):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0 Win64 x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
         'x-requested-with': 'XMLHttpRequest'
     }
+
     # custom scraper settings
     custom_settings = {
         # pass cookies along with headers
@@ -112,9 +96,8 @@ class FGSpyder(scrapy.Spider):
                 logger.info(
                     f'Requesting POST for {region_name, prov_name} with prov_id: {prov_id}')
                 self.dict_payload.update({'IstatProv': prov_id})
-                body = get_raw_payload(self.dict_payload)
-                logger.info(f'Requesting a POST with body: {body}')
-                # time.sleep(3)
+                body = spyder_utils.get_raw_payload(self.dict_payload) # POST request requires raw payload
+                logger.info(f'Requesting a POST with raw body: {body}')
                 yield scrapy.Request(
                     url=self.base_url,
                     method='POST',
@@ -127,13 +110,17 @@ class FGSpyder(scrapy.Spider):
                 )
 
     def parse_enterprise(self, response, region_name: str, prov_name: str):
-        resp = json.dumps(json.loads(response.text), indent=4)
+        resp = json.loads(response.text)
+        dataTable_ids = list(map(lambda x: x[-1].split('|')[-1], resp['Result']['DataTable']))
+        assert len(dataTable_ids) == resp['Result']['TotalRecords'], 'Ids must be equal to the total records.'
         now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
-        with open(f'{ROOT_PATH}/data/{now}_{region_name}_{prov_name}.json', '+w') as f:
-            json.dump(resp, f)
+        fname = now + f'_{region_name}_{prov_name}.txt'
+        with open(f'{ROOT_PATH}/data/{fname}', '+w') as f:
+            for i in dataTable_ids:
+                f.write(i + '\n')
 
 
 if __name__ == '__main__':
     process = CrawlerProcess()
-    process.crawl(FGSpyder)
+    process.crawl(FGPOSTSpyder)
     process.start()

@@ -21,7 +21,6 @@ DOWNLOAD_HANDLERS = {
 
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
-PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 50000
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'fgscraper (+http://www.yourdomain.com)'

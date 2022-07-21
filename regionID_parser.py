@@ -1,3 +1,7 @@
+"""
+Script che recupera tutti gli IDs number delle regioni e provincie
+"""
+
 import os
 import sys
 import json
@@ -11,6 +15,8 @@ import requests
 from bs4 import BeautifulSoup
 
 from typing import Dict, List, Union, Optional
+
+ASSET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 
 def get_select_options_dict(response: requests.Response, attrs: Optional[Dict[str, str]]={'name': 'IDRegione'}) -> dict:
     """Util for getting the list of all regions and their own IDs.
@@ -51,12 +57,12 @@ regionsIDs = get_select_options_dict(response=response)
 ### Get the provinces IDs per regions
 provincesIDs = get_provinces_json(regionsIDs)
 
-with open('./fgscraper/assets/regions-ids.json', '+w') as f:
+with open(f'{ASSET_PATH}/regions-ids.json', '+w') as f:
     json.dump(regionsIDs, f)
     logger.info('Regions IDs json written.')
 
 
-with open('./fgscraper/assets/provinces-ids.json', '+w') as f:
+with open(f'{ASSET_PATH}/provinces-ids.json', '+w') as f:
     json.dump(provincesIDs, f)
     logger.info('Provinces IDs json written.')
 
