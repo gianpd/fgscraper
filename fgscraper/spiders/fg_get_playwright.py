@@ -1,4 +1,3 @@
-import utils as spyder_utils
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 import asyncio
@@ -8,7 +7,8 @@ from datetime import datetime
 
 from wasabi import msg
 
-from data_ingest_manager import DataIngestManager
+import fgscraper.common.utils as spyder_utils
+from fgscraper.common.data_ingest_manager import DataIngestManager
 
 
 ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
@@ -76,5 +76,3 @@ async def main():
     async with async_playwright() as playwright:
         await run(playwright)
 
-
-asyncio.run(main())

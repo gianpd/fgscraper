@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 from typing import Dict, Optional
 
-ASSET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+ASSET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../assets')
 
 
 def get_select_options_dict(response: requests.Response, attrs: Optional[Dict[str, str]] = {'name': 'IDRegione'}) -> dict:
@@ -50,7 +50,7 @@ def get_provinces_json(region_id_dict: Dict[str, str]) -> Dict[str, str]:
     return pr
 
 
-if __name__ == '__main__':
+def main():
     # Get the regions IDs
     url = "https://www.fgas.it/RicercaSezC#"
     response = requests.get(url=url)

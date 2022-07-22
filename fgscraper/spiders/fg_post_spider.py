@@ -11,7 +11,7 @@ import os
 
 from wasabi import msg
 
-import utils as spyder_utils
+import fgscraper.common.utils as spyder_utils
 
 
 ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
@@ -116,8 +116,7 @@ class FGPOSTSpyder(scrapy.Spider):
             for i in dataTable_ids:
                 f.write(i + '\n')
 
-
-if __name__ == '__main__':
+def main():
     process = CrawlerProcess()
     process.crawl(FGPOSTSpyder)
     process.start()
