@@ -64,13 +64,32 @@ class DataIngestManager:
 
     @lru_cache
     def get_raw_enterprise_paths(self):
-        return self.get_file_paths(data_path=self._data_path/'raw_enterprise', file_prefix='json')
+        enterprise_ids_paths = self.get_file_paths(data_path=self._data_path/'raw_enterprise', file_prefix='json')
+        ent_ids = list(map(lambda x: str(x.stem).split('_')[3], enterprise_ids_paths)) # list(map(lambda)) does not guarantee to return sorted elements
+        return sorted(ent_ids)
 
-    def check_raw_enterprise_exist(self, enterprise_id: str):
-        raw_enterprise = self.get_raw_enterprise_paths()
-        ent_ids = list(map(lambda x: str(x.stem).split('_')[3], raw_enterprise))
-        if enterprise_id in ent_ids:
-            return True
-        return None
+    # def check_raw_enterprise_exist(self, enterprise_id: str):
+    #     ent_ids = self.get_raw_enterprise_paths()
+    #     return self.binary_search(array=ent_ids, item=enterprise_id)
+
+    # def binary_search(self, array, item):
+    #     # O(log n)
+    #     left = 0
+    #     right = len(array) -1
+    #     if item < array[left] or item > array[right]:
+    #         # element is not present
+    #         return None
+    #     while left <= right:
+    #         mid = left + (right - left) // 2
+    #         el = array[mid]
+    #         if el == item:
+    #             return True
+    #         if el < item:
+    #             left = mid + 1
+    #         else:
+    #             right = mid - 1
+    #     return None
+
+
 
 

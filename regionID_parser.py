@@ -3,7 +3,6 @@ Script che recupera tutti gli IDs number delle regioni e provincie
 """
 
 import os
-import sys
 import json
 
 from wasabi import msg
@@ -11,7 +10,7 @@ from wasabi import msg
 import requests
 from bs4 import BeautifulSoup
 
-from typing import Dict, List, Union, Optional
+from typing import Dict, Optional
 
 ASSET_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 

@@ -8,7 +8,6 @@ from scrapy.crawler import CrawlerProcess
 import scrapy
 import json
 import os
-import sys
 
 from wasabi import msg
 
