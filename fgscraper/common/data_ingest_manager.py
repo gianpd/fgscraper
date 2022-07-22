@@ -68,6 +68,13 @@ class DataIngestManager:
         ent_ids = list(map(lambda x: str(x.stem).split('_')[3], enterprise_ids_paths)) # list(map(lambda)) does not guarantee to return sorted elements
         return sorted(ent_ids)
 
+    def check_if_must_run_id_and_post(self):
+        id_txt = self.get_file_paths(self._data_path/'enterprise_ids', 'txt')
+        if len(id_txt) != 107:
+            return True
+        return None
+
+
     # def check_raw_enterprise_exist(self, enterprise_id: str):
     #     ent_ids = self.get_raw_enterprise_paths()
     #     return self.binary_search(array=ent_ids, item=enterprise_id)

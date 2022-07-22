@@ -26,13 +26,14 @@ async def run(playwright):
         fpath = Path(data[0])
         regione, provincia = fpath.stem.split('_')[1:]
         id_lines = data[1].splitlines()
-        msg.info(f'===== Processing files with {len(id_lines)} Ids')
+        start_n_lines = len(id_lines)
+        msg.info(f'===== Processing files with {start_n_lines} Ids')
         msg.info(f'regione: {regione}, provincia: {provincia}')
         # check if raw enterprise json already exist
         already_ids = data_manager.get_raw_enterprise_paths()
         msg.good(f'Checking if current TXT contains already processed enterprise ...')
         id_lines = list(set(id_lines).difference(already_ids))  # ids are unique, so sets could be used. 
-        msg.good(f'id_lines reduced to {len(id_lines)}')
+        msg.good(f'id_lines reduced of {start_n_lines - len(id_lines)}')
 
         for id_line in id_lines:
             _url = spyder_utils.get_full_url(id_line)
