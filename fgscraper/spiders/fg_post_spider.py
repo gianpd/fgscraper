@@ -9,10 +9,8 @@ import scrapy
 import json
 import os
 import sys
-import logging
-logging.basicConfig(stream=sys.stdout, format='%(asctime)-15s %(message)s',
-                    level=logging.INFO, datefmt=None)
-logger = logging.getLogger("region-id-spyder")
+
+from wasabi import msg
 
 import utils as spyder_utils
 
@@ -93,11 +91,11 @@ class FGPOSTSpyder(scrapy.Spider):
             provs = self.provinces.get(region_name)
             for prov in provs:
                 prov_name, prov_id = prov.popitem()
-                logger.info(
+                msg.info(
                     f'Requesting POST for {region_name, prov_name} with prov_id: {prov_id}')
                 self.dict_payload.update({'IstatProv': prov_id})
                 body = spyder_utils.get_raw_payload(self.dict_payload) # POST request requires raw payload
-                logger.info(f'Requesting a POST with raw body: {body}')
+                msg.info(f'Requesting a POST with raw body: {body}')
                 yield scrapy.Request(
                     url=self.base_url,
                     method='POST',
@@ -115,7 +113,7 @@ class FGPOSTSpyder(scrapy.Spider):
         assert len(dataTable_ids) == resp['Result']['TotalRecords'], 'Ids must be equal to the total records.'
         now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
         fname = now + f'_{region_name}_{prov_name}.txt'
-        with open(f'{ROOT_PATH}/data/{fname}', '+w') as f:
+        with open(f'{ROOT_PATH}/data/enterprise_ids/{fname}', '+w') as f:
             for i in dataTable_ids:
                 f.write(i + '\n')
 

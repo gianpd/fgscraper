@@ -1,0 +1,76 @@
+import os
+import json
+import pathlib
+
+from functools import lru_cache
+
+from wasabi import msg
+
+from typing import Union, List, Dict, Optional 
+
+ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+DATA_PATH = pathlib.Path(ROOT_PATH)/'data'
+
+class DataIngestManager:
+    
+    def __init__(self, raw_enterprise_path: str):
+        self._raw_enterprise_path = raw_enterprise_path
+        self._root_path = ROOT_PATH
+        self._data_path = DATA_PATH
+
+    def write_json(self, full_dict: Dict[str, str], dir_path: Union[str, pathlib.Path], fname: str) -> None:
+        if not pathlib.Path(dir_path).is_dir():
+            raise ValueError(f'dir path {dir_path} is not a regular directory.')
+
+        fname = pathlib.Path(fname).stem + '.json'
+        abs_file_path = dir_path/fname
+        msg.info(f'Writing json to {abs_file_path.name}')
+        with open(abs_file_path, '+w') as raw_f:
+            json.dump(full_dict, raw_f)
+
+    def read_json(self, abs_file_path: str) -> Dict:
+        if not pathlib.Path(abs_file_path).is_file():
+            raise ValueError(f'{abs_file_path} is not a regular file.')
+        with open(abs_file_path) as f:
+            d = json.load(f)
+        return d
+
+    def get_file_paths(self, data_path: Union[str, pathlib.Path], file_prefix: str, sort: Optional[bool] = True) -> List[str]:
+        """
+        Util for getting a sorted/unsorted list of file paths from disk. 
+
+        --Parameters
+         - data_path: (str, or Path), the directory path
+         - file_prefix: (str), the file prefixs which should be searched (txt, json, csv, etc ..)
+         - sort: (bool), if or not returning a sorted list
+
+        --Return
+         - A list containing the founded file with prefix file_prefix.
+
+        """
+
+        if isinstance(data_path, str):
+            data_path = pathlib.Path(data_path)
+
+        if not data_path.is_dir():
+            raise ValueError(f'data path {data_path} is not a regular directory.')
+        
+        file_prefix = file_prefix if not file_prefix[0] == '.' else file_prefix[1:]
+        ls = list(map(lambda x: x, data_path.glob(f'*.{file_prefix}')))
+        msg.info(f'Founded {len(ls)} file with prefix {file_prefix} at {data_path}')
+        if sort:
+            return sorted(ls)
+        return ls
+
+    @lru_cache
+    def get_raw_enterprise_paths(self):
+        return self.get_file_paths(data_path=self._data_path/'raw_enterprise', file_prefix='json')
+
+    def check_raw_enterprise_exist(self, enterprise_id: str):
+        raw_enterprise = self.get_raw_enterprise_paths()
+        ent_ids = list(map(lambda x: str(x.stem).split('_')[3], raw_enterprise))
+        if enterprise_id in ent_ids:
+            return True
+        return None
+
+
