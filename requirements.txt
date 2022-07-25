@@ -1,0 +1,5 @@
+beautifulsoup4==4.11.1
+Scrapy==2.6.1
+scrapy-playwright==0.0.18
+wasabi==0.9.1
+pandas==1.4.1
