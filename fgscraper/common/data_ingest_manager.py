@@ -8,7 +8,7 @@ from wasabi import msg
 
 from typing import Union, List, Dict, Optional 
 
-ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
+ROOT_PATH = pathlib.Path(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 DATA_PATH = pathlib.Path(ROOT_PATH)/'data'
 
 class DataIngestManager:
@@ -71,6 +71,12 @@ class DataIngestManager:
     def check_if_must_run_id_and_post(self):
         id_txt = self.get_file_paths(self._data_path/'enterprise_ids', 'txt')
         if len(id_txt) != 107:
+            return True
+        return None
+
+    def check_if_regionIds(self):
+        regionIds = self.get_file_paths(data_path=self._root_path/'assets', file_prefix='json')
+        if len(regionIds):
             return True
         return None
 
