@@ -19,8 +19,8 @@ file_paths = data_manager.get_file_paths(DATA_PATH/'enterprise_ids', 'txt')
 dataset = spyder_utils.gen_dataset(file_paths)
 
 async def run(playwright):
-    # if not dataset.__len__():
-    #     msg.fail('No enterprise ids provided. Be sure to have run fg_post_spider.py before.')
+    if not len(file_paths):
+        msg.fail('No enterprise ids provided. Be sure to have run fg_post_spider.py before.')
         
     for data in dataset:
         chromium = playwright.chromium
