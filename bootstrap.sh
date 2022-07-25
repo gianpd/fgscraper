@@ -16,7 +16,7 @@ if [ "$1" == "--setup" ]; then
     echo "Checking if project files are generated..."
     [ -d data ] || (
         echo "No data directory found, creating ..."
-        mkdir data && cd data && mkdir enterprise_ids && mkdir processed_enterprise && raw_enterprise
+        mkdir data && cd data && mkdir enterprise_ids && mkdir processed_enterprise && mkdir raw_enterprise
     )
     [ -d assets ] || (echo "No assets directory found, creating ..." && mkdir assets)
     [ -d .venv ] || (echo "No virtual environment found, creating ..." && python3.9 -m venv ${VENV})
