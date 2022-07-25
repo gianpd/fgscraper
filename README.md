@@ -1,7 +1,7 @@
 # fgscraper
 
 ### RUN the app
-1. bash bootstrap.sh --setup
-2. bash bootstrap.sh --run
+1. sudo bash bootstrap.sh --setup
+2. sudo bash bootstrap.sh --run
 
 

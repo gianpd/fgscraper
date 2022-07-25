@@ -76,7 +76,7 @@ class DataIngestManager:
 
     def check_if_regionIds(self):
         regionIds = self.get_file_paths(data_path=self._root_path/'assets', file_prefix='json')
-        if len(regionIds):
+        if len(regionIds) == 2:
             return True
         return None
 

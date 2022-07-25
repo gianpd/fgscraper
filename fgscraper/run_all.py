@@ -16,8 +16,6 @@ from fgscraper.spiders.fg_post_spider import main as fg_post_main
 from fgscraper.spiders.fg_get_playwright import main as fg_get_main
 from fgscraper.post_processing.processing_raw_enterprise import main as processing_main
 
-
-
 loop = asyncio.get_event_loop()
 
 def main():

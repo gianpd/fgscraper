@@ -21,7 +21,8 @@ if [ "$1" == "--setup" ]; then
     [ -d assets ] || (echo "No assets directory found, creating ..." && mkdir assets)
     [ -d .venv ] || (echo "No virtual environment found, creating ..." && python3.9 -m venv ${VENV})
     source ${VENV}/bin/activate && ${PYTHON} -m pip install --upgrade pip && ${PIP} install -r requirements.txt
-    playwright install
+    source ${VENV}/bin/activate && playwright install
+    chmod 777 -R data && chmod 777 -R assets
 fi
 
 if [ "$1" == "--test" ]; then

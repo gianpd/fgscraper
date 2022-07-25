@@ -18,8 +18,10 @@ data_manager = DataIngestManager(
 file_paths = data_manager.get_file_paths(DATA_PATH/'enterprise_ids', 'txt')
 dataset = spyder_utils.gen_dataset(file_paths)
 
-
 async def run(playwright):
+    # if not dataset.__len__():
+    #     msg.fail('No enterprise ids provided. Be sure to have run fg_post_spider.py before.')
+        
     for data in dataset:
         chromium = playwright.chromium
         browser = await chromium.launch()
@@ -66,8 +68,11 @@ async def run(playwright):
             # write the raw enterprise info to the disk
             now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
             fname_raw = f'{now}_{regione}_{provincia}_{id_line}'
-            data_manager.write_json(
-                full_dict=full_dict, dir_path=DATA_PATH/'raw_enterprise', fname=fname_raw)
+            try:
+                data_manager.write_json(
+                    full_dict=full_dict, dir_path=DATA_PATH/'raw_enterprise', fname=fname_raw)
+            except PermissionError as e:
+                msg.fail(e)
             await context.close()
             
         await browser.close()

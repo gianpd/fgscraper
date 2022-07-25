@@ -18,10 +18,14 @@ data_manager = DataIngestManager(DATA_PATH/'raw_enterprise')
 
 def main():
     dfs = []
-    for ent_json_path in data_manager.get_file_paths(data_path=data_manager._raw_enterprise_path, file_prefix='json'):
+    ent_json_paths = data_manager.get_file_paths(data_path=data_manager._raw_enterprise_path, file_prefix='json')
+    if not len(ent_json_paths):
+        raise ValueError('No raw enterprise to process. Be sure to run fg_post_playwright.py before.')
+
+    for ent_json_path in ent_json_paths:
         ent_json = data_manager.read_json(ent_json_path)
         dfs.append(pd.DataFrame(ent_json, index=[0]))
-
+    
     df = pd.concat(dfs, ignore_index=True)
     msg.info(f'Created a DF with {len(df)} rows')
     now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
