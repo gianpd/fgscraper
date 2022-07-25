@@ -1,11 +1,7 @@
 # fgscraper
 
-### RUN
-1. python -m venv .venv\ 
-&& source .venv/bin/activate\
-&& python -m pip install --upgrade pip\
-&& pip install -r requirements.txt
-
-2. python -m fgscraper
+### RUN the app
+1. bash bootstrap.sh --setup
+2. bash bootstrap.sh --run
 
 
