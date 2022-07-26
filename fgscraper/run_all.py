@@ -28,3 +28,7 @@ def main():
         msg.good('Running just get and processing')
         loop.run_until_complete(fg_get_main())
         processing_main()
+
+def run_post_processing():
+    msg.good('Running post-processing job ...')
+    processing_main()

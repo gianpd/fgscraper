@@ -32,3 +32,7 @@ fi
 if [ "$1" == "--run" ]; then
     ${PYTHON} -m fgscraper
 fi
+
+if ["$1" == '--run-post-processing' ]; then
+    ${PYTHON} -m fgscraper --post-processing
+fi
