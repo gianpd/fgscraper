@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from wasabi import msg
+import time
 import asyncio
 from fgscraper.common.data_ingest_manager import DataIngestManager
 from fgscraper.spiders.regionID_parser import main as regionID_main
@@ -22,12 +23,21 @@ def main():
     if data_manager.check_if_must_run_id_and_post():
         msg.info('Running entire pipeline')
         fg_post_main()
+        time.sleep(1)
         loop.run_until_complete(fg_get_main())
         processing_main()
     else:
         msg.good('Running just get and processing')
         loop.run_until_complete(fg_get_main())
         processing_main()
+
+def run_fg_post_main():
+    msg.good('Running fg-post-spyder job ...')
+    fg_post_main()
+
+async def run_fg_get_main():
+    msg.good('Running fg-post-spyder job ...')
+    await fg_get_main()
 
 def run_post_processing():
     msg.good('Running post-processing job ...')

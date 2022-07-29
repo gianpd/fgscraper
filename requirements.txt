@@ -4,3 +4,4 @@ scrapy-playwright==0.0.18
 wasabi==0.9.1
 pandas==1.4.1
 pyarrow==8.0.0
+aiofiles==0.8.0

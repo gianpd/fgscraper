@@ -1,5 +1,6 @@
 import os
 import sys
+import aiofiles
 
 from wasabi import msg
 
@@ -15,7 +16,7 @@ def get_full_url(enterprise_id: str) -> str:
     return BASE_URL + enterprise_id
 
 
-def gen_dataset(file_paths: Union[List[str], str]) -> Tuple[str, str]:
+async def gen_dataset(file_paths: Union[List[str], str]) -> Tuple[str, str]:
     """
     Dataset Generator:
 
@@ -29,9 +30,9 @@ def gen_dataset(file_paths: Union[List[str], str]) -> Tuple[str, str]:
         raise ValueError(
             'Generator input must be a List containing the enterprise IDs.')
     for f_path in file_paths:
-        with open(f_path) as f:
+        async with aiofiles.open(f_path) as f:
             msg.info(f'yielding {f_path}')
-            yield (f_path, f.read())
+            yield (f_path, await f.read())
 
 
 def get_raw_payload(dict_payload: Dict[str, str]) -> str:

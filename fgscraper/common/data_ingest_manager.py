@@ -2,6 +2,8 @@ import os
 import json
 import pathlib
 
+import aiofiles
+
 from functools import lru_cache
 
 from wasabi import msg
@@ -17,21 +19,22 @@ class DataIngestManager:
         self._raw_enterprise_path = raw_enterprise_path
         self._root_path = ROOT_PATH
         self._data_path = DATA_PATH
-
-    def write_json(self, full_dict: Dict[str, str], dir_path: Union[str, pathlib.Path], fname: str) -> None:
-        if not pathlib.Path(dir_path).is_dir():
-            raise ValueError(f'dir path {dir_path} is not a regular directory.')
-
+    
+    async def write_json(self, full_dict: Dict[str, str], dir_path: Union[str, pathlib.Path], fname: str) -> None:
+        dir_path = pathlib.Path(dir_path)
+        if not dir_path.is_dir():
+             raise ValueError(f'dir path {dir_path} is not a regular directory.')
+             
         fname = pathlib.Path(fname).stem + '.json'
         abs_file_path = dir_path/fname
         msg.info(f'Writing json to {abs_file_path.name}')
-        with open(abs_file_path, '+w') as raw_f:
+        async with aiofiles.open(abs_file_path, '+w') as raw_f:
             json.dump(full_dict, raw_f)
 
-    def read_json(self, abs_file_path: str) -> Dict:
+    async def read_json(self, abs_file_path: str) -> Dict:
         if not pathlib.Path(abs_file_path).is_file():
             raise ValueError(f'{abs_file_path} is not a regular file.')
-        with open(abs_file_path) as f:
+        async with aiofiles.open(abs_file_path) as f:
             d = json.load(f)
         return d
 

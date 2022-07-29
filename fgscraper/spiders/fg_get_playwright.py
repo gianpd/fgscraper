@@ -4,6 +4,8 @@ from pathlib import Path
 import os
 from datetime import datetime
 
+import time
+
 from wasabi import msg
 
 import fgscraper.common.utils as spyder_utils
@@ -14,14 +16,17 @@ ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 DATA_PATH = Path(ROOT_PATH)/'data'
 data_manager = DataIngestManager(
     raw_enterprise_path=DATA_PATH/'raw_enterprise')
-file_paths = data_manager.get_file_paths(DATA_PATH/'enterprise_ids', 'txt')
+
+enterprise_id_path = DATA_PATH/'enterprise_ids'
+file_paths = data_manager.get_file_paths(enterprise_id_path, 'txt')
 dataset = spyder_utils.gen_dataset(file_paths)
 
 async def run(playwright):
     if not len(file_paths):
-        msg.fail('No enterprise ids provided. Be sure to have run fg_post_spider.py before.')
+        msg.fail(f'FG GET: No enterprise ids provided at {enterprise_id_path}. Be sure to have run fg_post_spider.py before.')
         
-    for data in dataset:
+    async for data in dataset:
+        out_tic = time.time()
         chromium = playwright.chromium
         browser = await chromium.launch()
         fpath = Path(data[0])
@@ -37,6 +42,7 @@ async def run(playwright):
         msg.good(f'id_lines reduced of {start_n_lines - len(id_lines)}')
 
         for id_line in id_lines:
+            in_tic = time.time()
             _url = spyder_utils.get_full_url(id_line)
             msg.info(f'requesting page at {_url}')
             try:
@@ -68,13 +74,14 @@ async def run(playwright):
             now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
             fname_raw = f'{now}_{regione}_{provincia}_{id_line}'
             try:
-                data_manager.write_json(
+                await data_manager.write_json(
                     full_dict=full_dict, dir_path=DATA_PATH/'raw_enterprise', fname=fname_raw)
             except PermissionError as e:
                 msg.fail(e)
             await context.close()
-            
+            msg.good(f'Inner Elapsed {time.time()-in_tic}')
         await browser.close()
+        msg.good(f'Outer Elapsed {time.time()-out_tic}')
 
 
 async def main():
