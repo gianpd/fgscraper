@@ -21,7 +21,6 @@ def main():
     ent_json_paths = data_manager.get_file_paths(data_path=data_manager._raw_enterprise_path, file_prefix='json')
     if not len(ent_json_paths):
         raise ValueError('No raw enterprise to process. Be sure to run fg_get_playwright.py before.')
-
     for ent_json_path in ent_json_paths:
         ent_json = data_manager.read_json(ent_json_path)
         dfs.append(pd.DataFrame(ent_json, index=[0]))

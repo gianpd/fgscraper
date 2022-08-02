@@ -16,18 +16,16 @@ if not data_manager.check_if_regionIds():
 from fgscraper.spiders.fg_post_spider import main as fg_post_main
 from fgscraper.spiders.fg_get_playwright import main as fg_get_main
 from fgscraper.post_processing.processing_raw_enterprise import main as processing_main
-
 loop = asyncio.get_event_loop()
 
 def main():
     if data_manager.check_if_must_run_id_and_post():
         msg.info('Running entire pipeline')
         fg_post_main()
-        time.sleep(1)
         loop.run_until_complete(fg_get_main())
         processing_main()
     else:
-        msg.good('Running just get and processing')
+        msg.good('Running just get and post-processing')
         loop.run_until_complete(fg_get_main())
         processing_main()
 
@@ -36,7 +34,7 @@ def run_fg_post_main():
     fg_post_main()
 
 async def run_fg_get_main():
-    msg.good('Running fg-post-spyder job ...')
+    msg.good('Running fg-get-spyder job ...')
     await fg_get_main()
 
 def run_post_processing():

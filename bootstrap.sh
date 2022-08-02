@@ -6,9 +6,9 @@ PIP=${VENV}/bin/pip
 
 if [ -z "$1" ]; then
     echo "---------------HELP-----------------"
-    echo "To setup the project: bash bootstrap.sh --setup"
-    echo "To test the project type make test: bash bootstrap.sh --test"
-    echo "To run the project type make run: bash bootstrap.sh --run"
+    echo "To setup the project: sudo bash bootstrap.sh --setup"
+    echo "To test the project type make test: sudo bash bootstrap.sh --test"
+    echo "To run the project type make run: sudo bash bootstrap.sh --run"
     echo "------------------------------------"
 fi
 
@@ -30,7 +30,7 @@ if [ "$1" == "--test" ]; then
 fi
 
 if [ "$1" == "--run" ]; then
-    ${PYTHON} -m fgscraper
+    ${PYTHON} -m fgscraper --run
 fi
 
 if ["$1" == '--run-post-processing' ]; then

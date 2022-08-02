@@ -2,7 +2,7 @@ import os
 import json
 import pathlib
 
-import aiofiles
+from datetime import datetime, timedelta
 
 from functools import lru_cache
 
@@ -20,7 +20,7 @@ class DataIngestManager:
         self._root_path = ROOT_PATH
         self._data_path = DATA_PATH
     
-    async def write_json(self, full_dict: Dict[str, str], dir_path: Union[str, pathlib.Path], fname: str) -> None:
+    def write_json(self, full_dict: Dict[str, str], dir_path: Union[str, pathlib.Path], fname: str) -> None:
         dir_path = pathlib.Path(dir_path)
         if not dir_path.is_dir():
              raise ValueError(f'dir path {dir_path} is not a regular directory.')
@@ -28,13 +28,13 @@ class DataIngestManager:
         fname = pathlib.Path(fname).stem + '.json'
         abs_file_path = dir_path/fname
         msg.info(f'Writing json to {abs_file_path.name}')
-        async with aiofiles.open(abs_file_path, '+w') as raw_f:
+        with open(abs_file_path, '+w') as raw_f:
             json.dump(full_dict, raw_f)
 
-    async def read_json(self, abs_file_path: str) -> Dict:
+    def read_json(self, abs_file_path: str) -> Dict:
         if not pathlib.Path(abs_file_path).is_file():
             raise ValueError(f'{abs_file_path} is not a regular file.')
-        async with aiofiles.open(abs_file_path) as f:
+        with open(abs_file_path) as f:
             d = json.load(f)
         return d
 
@@ -71,10 +71,23 @@ class DataIngestManager:
         ent_ids = list(map(lambda x: str(x.stem).split('_')[3], enterprise_ids_paths)) # list(map(lambda)) does not guarantee to return sorted elements
         return sorted(ent_ids)
 
+
     def check_if_must_run_id_and_post(self):
         id_txt = self.get_file_paths(self._data_path/'enterprise_ids', 'txt')
-        if len(id_txt) != 107:
+        if len(id_txt) == 0:
             return True
+            
+        ts = id_txt[0].name.split('_')[0]
+        ts = datetime.strptime(ts, '%Y%m%d%H%M%S')
+        elapsed = datetime.now() - ts
+        if len(id_txt) != 107:
+            # there are less than 107 provinces -> make all 107 posts requests
+            return True
+        else:
+            if elapsed > timedelta(days=30):
+                # the enterprise ids are too old.
+                return True
+        # there are 107 provinces and the collected time is not more old than a month 
         return None
 
     def check_if_regionIds(self):

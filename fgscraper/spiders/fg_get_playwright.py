@@ -19,11 +19,12 @@ data_manager = DataIngestManager(
 
 enterprise_id_path = DATA_PATH/'enterprise_ids'
 file_paths = data_manager.get_file_paths(enterprise_id_path, 'txt')
+msg.info(f'FG GET: retrived {len(file_paths)} enterprise id files at {enterprise_id_path}')
 dataset = spyder_utils.gen_dataset(file_paths)
 
 async def run(playwright):
-    if not len(file_paths):
-        msg.fail(f'FG GET: No enterprise ids provided at {enterprise_id_path}. Be sure to have run fg_post_spider.py before.')
+    # if len(file_paths) == 0:
+    #    msg.fail(f'FG GET: No enterprise ids provided at {enterprise_id_path}. Be sure to have run fg_post_spider.py before.')
         
     async for data in dataset:
         out_tic = time.time()
@@ -74,7 +75,7 @@ async def run(playwright):
             now = datetime.strftime(datetime.now(), '%Y%m%d%H%M')
             fname_raw = f'{now}_{regione}_{provincia}_{id_line}'
             try:
-                await data_manager.write_json(
+                data_manager.write_json(
                     full_dict=full_dict, dir_path=DATA_PATH/'raw_enterprise', fname=fname_raw)
             except PermissionError as e:
                 msg.fail(e)
