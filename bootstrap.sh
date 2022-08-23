@@ -8,7 +8,8 @@ if [ -z "$1" ]; then
     echo "---------------HELP-----------------"
     echo "To setup the project: sudo bash bootstrap.sh --setup"
     echo "To test the project type make test: sudo bash bootstrap.sh --test"
-    echo "To run the project type make run: sudo bash bootstrap.sh --run"
+    echo "To run the project: sudo bash bootstrap.sh --run"
+    echo "To run just the post-processing project: sudo bash bootstrap.sh --run-post-processing"
     echo "------------------------------------"
 fi
 
@@ -33,6 +34,6 @@ if [ "$1" == "--run" ]; then
     ${PYTHON} -m fgscraper --run
 fi
 
-if ["$1" == '--run-post-processing' ]; then
+if [ "$1" == '--run-post-processing' ]; then
     ${PYTHON} -m fgscraper --post-processing
 fi

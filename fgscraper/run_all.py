@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from wasabi import msg
-import time
 import asyncio
 from fgscraper.common.data_ingest_manager import DataIngestManager
 from fgscraper.spiders.regionID_parser import main as regionID_main
@@ -9,6 +8,7 @@ ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 DATA_PATH = Path(ROOT_PATH)/'data'
 data_manager = DataIngestManager(DATA_PATH/'raw_enterprise')
 
+### regionID main download the ID associated to each region
 if not data_manager.check_if_regionIds():
     msg.good('##### Running regionID main script')
     regionID_main()
