@@ -60,7 +60,6 @@ def main():
     to_replace = list(ENTI_CERTIFICATO_DICT.values())
     replace_with = list(ENTI_CERTIFICATO_DICT.keys())
     df['ENTE'] = df['Numero certificato'].replace(to_replace, replace_with, regex=True)
-    df.columns = sorted(df.columns)
     msg.good(f'Created df with columns: {df.columns}')
     msg.good('df head:\n{df}'.format(df=df.head(1)))
 
